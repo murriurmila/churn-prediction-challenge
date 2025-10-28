@@ -1,0 +1,85 @@
+# ---
+# Customer Churn Prediction using Logistic Regression
+# Author: Urmila Murri
+# Dataset: Telco Customer Churn (Kaggle)
+# Accuracy: ~80%
+# ---
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+print("Setup complete!")
+
+  # Cell 1: Load Data
+url = "https://raw.githubusercontent.com/urmila-murri/datasets/main/WA_Fn-UseC_-Telco-Customer-Churn.csv"
+df = pd.read_csv(url)
+print(f"Dataset loaded: {df.shape[0]} rows, {df.shape[1]} columns")
+df.head()
+
+  # Cell 2: Data Cleaning
+df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
+df = df.dropna()
+print(f"After cleaning: {df.shape[0]} rows")
+
+# Cell 3: Encode Categorical Variables
+le = LabelEncoder()
+cat_cols = ['gender', 'Partner', 'Dependents', 'PhoneService', 'MultipleLines',
+            'InternetService', 'OnlineSecurity', 'OnlineBackup', 'DeviceProtection',
+            'TechSupport', 'StreamingTV', 'StreamingMovies', 'Contract',
+            'PaperlessBilling', 'PaymentMethod', 'Churn']
+
+for col in cat_cols:
+    df[col] = le.fit_transform(df[col])
+
+print("Encoding complete.")
+  # Cell 4: Select Features & Split
+features = ['tenure', 'MonthlyCharges', 'TotalCharges', 'Contract', 'InternetService', 'PaymentMethod']
+X = df[features]
+y = df['Churn']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+print(f"Train: {X_train.shape[0]}, Test: {X_test.shape[0]}")
+
+  # Cell 5: Train Model
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy: {accuracy:.1%}")
+
+  # Cell 6: Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+plt.figure(figsize=(6,5))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+            xticklabels=['No Churn', 'Churn'],
+            yticklabels=['No Churn', 'Churn'])
+plt.title('Confusion Matrix')
+plt.ylabel('Actual')
+plt.xlabel('Predicted')
+plt.show()
+  # Cell 7: Feature Importance
+coeffs = pd.DataFrame({
+    'Feature': features,
+    'Coefficient': model.coef_[0],
+    'Odds Ratio': np.exp(model.coef_[0])
+}).sort_values('Odds Ratio', ascending=False)
+
+print("\nTop Predictors of Churn:")
+print(coeffs.head(3))
+
+  # Cell 8: Sample Churn Probabilities
+sample = X_test.sample(9, random_state=42)
+probs = model.predict_proba(sample)[:, 1].reshape(3, 3)
+
+plt.figure(figsize=(8, 6))
+sns.heatmap(probs, annot=True, cmap='Reds', fmt='.2f', cbar=True)
+plt.title('Sample Customer Churn Probability Heatmap')
+plt.show()
+  
