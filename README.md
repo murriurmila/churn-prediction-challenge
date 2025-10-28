@@ -1,1 +1,3 @@
-# customer-churn-prediction
+Customer Churn Prediction (Logistic Regression)
+Dataset: Telco Customer Churn – Kaggle
+
