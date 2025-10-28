@@ -17,7 +17,7 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 print("Setup complete!")
 
   # Cell 1: Load Data
-url = "https://raw.githubusercontent.com/urmila-murri/datasets/main/WA_Fn-UseC_-Telco-Customer-Churn.csv"
+url = "Telco-Customer-Churn.csv"
 df = pd.read_csv(url)
 print(f"Dataset loaded: {df.shape[0]} rows, {df.shape[1]} columns")
 df.head()
